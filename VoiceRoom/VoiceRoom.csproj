@@ -7,10 +7,15 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
     <UseWindowsForms>true</UseWindowsForms>
+    <ApplicationIcon>Resources\app-icon.ico</ApplicationIcon>
   </PropertyGroup>
+
 
   <ItemGroup>
     <Resource Include="Resources\app-icon.ico" />
+    <None Include="Resources\app-icon.ico">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
   <ItemGroup>
