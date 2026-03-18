@@ -1,23 +1,31 @@
-﻿using System.Text;
+﻿using System;
+using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
+using Microsoft.Web.WebView2.Core;
 
 namespace VoiceRoom;
 
-/// <summary>
-/// Interaction logic for MainWindow.xaml
-/// </summary>
 public partial class MainWindow : Window
 {
+    private const string AppUrl = "https://voice-room.ru";
+
     public MainWindow()
     {
         InitializeComponent();
+        Loaded += async (_, _) => await InitWebViewAsync();
+    }
+
+    private async Task InitWebViewAsync()
+    {
+        await webView.EnsureCoreWebView2Async();
+
+        webView.CoreWebView2.PermissionRequested += (s, e) =>
+        {
+            if (e.PermissionKind is CoreWebView2PermissionKind.Camera
+                                 or CoreWebView2PermissionKind.Microphone)
+                e.State = CoreWebView2PermissionState.Allow;
+        };
+
+        webView.Source = new Uri(AppUrl);
     }
 }
