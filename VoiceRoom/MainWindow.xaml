@@ -3,11 +3,32 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf"
         Title="Voice Room"
-        Height="800" Width="1200"
-        MinHeight="600" MinWidth="900"
+        Height="800"
+        Width="1200"
+        MinHeight="600"
+        MinWidth="900"
         WindowStartupLocation="CenterScreen"
         Icon="Resources/app-icon.ico">
     <Grid>
-        <wv2:WebView2 x:Name="webView" />
+        <wv2:WebView2 x:Name="webView"/>
+
+        <!-- Loading overlay -->
+        <Grid x:Name="loadingOverlay"
+              Background="#1a1a1a">
+            <StackPanel HorizontalAlignment="Center"
+                        VerticalAlignment="Center">
+                <TextBlock Text="Voice Room"
+                           Foreground="White"
+                           FontSize="28"
+                           FontWeight="Bold"
+                           HorizontalAlignment="Center"
+                           Margin="0,0,0,12"/>
+                <TextBlock x:Name="statusText"
+                           Text="Connecting..."
+                           Foreground="#888888"
+                           FontSize="14"
+                           HorizontalAlignment="Center"/>
+            </StackPanel>
+        </Grid>
     </Grid>
 </Window>
