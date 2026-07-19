@@ -28,6 +28,14 @@
                            Foreground="#888888"
                            FontSize="14"
                            HorizontalAlignment="Center"/>
+                <Button x:Name="retryButton"
+                        Content="Retry"
+                        Click="RetryButton_Click"
+                        Visibility="Collapsed"
+                        HorizontalAlignment="Center"
+                        Margin="0,16,0,0"
+                        Padding="24,6"
+                        FontSize="14"/>
             </StackPanel>
         </Grid>
     </Grid>

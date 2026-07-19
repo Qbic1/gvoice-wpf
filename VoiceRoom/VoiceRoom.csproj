@@ -8,6 +8,17 @@
     <UseWPF>true</UseWPF>
     <UseWindowsForms>true</UseWindowsForms>
     <ApplicationIcon>Resources\app-icon.ico</ApplicationIcon>
+
+    <!-- Keep the assembly/file version in sync with installer.iss AppVersion. -->
+    <Version>1.1.0</Version>
+
+    <!-- Ship self-contained: end-user machines are not guaranteed to have the
+         .NET 10 Desktop Runtime installed, and a framework-dependent publish
+         (the default for `-r win-x64` on .NET 8+) would fail to start there with
+         no clear error. RID is pinned so `dotnet publish -r win-x64` and the
+         installer's expected `publish\win-x64\` output stay consistent. -->
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <SelfContained>true</SelfContained>
   </PropertyGroup>
 
 

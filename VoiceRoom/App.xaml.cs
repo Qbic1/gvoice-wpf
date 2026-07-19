@@ -12,27 +12,41 @@ public partial class App : System.Windows.Application
 {
     private TrayIcon? _tray;
     private Mutex? _mutex;
+    private bool _ownsMutex;
     private MainWindow? _mainWindow;
     private CancellationTokenSource? _pipeCts;
 
     [DllImport("user32.dll")]
     private static extern bool SetForegroundWindow(IntPtr hWnd);
 
+    [DllImport("user32.dll")]
+    private static extern bool AllowSetForegroundWindow(int dwProcessId);
+
+    private const int ASFW_ANY = -1;
+
     protected override void OnStartup(StartupEventArgs e)
     {
         _mutex = new Mutex(true, "VoiceRoom_SingleInstance", out bool isNewInstance);
+        _ownsMutex = isNewInstance;
 
         if (!isNewInstance)
         {
             // Signal the running instance to show itself
             try
             {
+                // Let the already-running instance take the foreground.
+                AllowSetForegroundWindow(ASFW_ANY);
+
                 using var client = new NamedPipeClientStream(".", "VoiceRoom_Pipe", PipeDirection.Out);
                 client.Connect(1000);
                 using var writer = new StreamWriter(client);
                 writer.WriteLine("show");
             }
             catch { }
+
+            // This instance never owned the mutex, so it must not be released.
+            _mutex.Dispose();
+            _mutex = null;
 
             Shutdown();
             return;
@@ -87,15 +101,21 @@ public partial class App : System.Windows.Application
                 }
             }
             catch (OperationCanceledException) { break; }
-            catch { /* ignore pipe errors, keep listening */ }
+            catch
+            {
+                // A transient pipe error (name temporarily held, ACL hiccup) must not
+                // turn into a 100%-CPU busy-loop: back off briefly before retrying.
+                try { await Task.Delay(500, ct); }
+                catch (OperationCanceledException) { break; }
+            }
         }
     }
 
     private void OnDispatcherException(object sender, DispatcherUnhandledExceptionEventArgs e)
     {
-        LogError(e.Exception);
+        var logPath = LogError(e.Exception);
         e.Handled = true;
-        System.Windows.MessageBox.Show($"Error: {e.Exception.Message}\n\nSee log on Desktop.",
+        System.Windows.MessageBox.Show($"Error: {e.Exception.Message}\n\nSee log:\n{logPath}",
             "Voice Room Error", MessageBoxButton.OK, MessageBoxImage.Error);
     }
 
@@ -105,20 +125,31 @@ public partial class App : System.Windows.Application
             LogError(ex);
     }
 
-    private static void LogError(Exception ex)
+    private static string LogError(Exception ex)
     {
-        var path = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.Desktop),
-            "VoiceRoom-crash.log");
-        File.AppendAllText(path, $"[{DateTime.Now}]\n{ex}\n\n");
+        var dir = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            "VoiceRoom");
+        Directory.CreateDirectory(dir);
+        var path = Path.Combine(dir, "VoiceRoom-crash.log");
+        try
+        {
+            File.AppendAllText(path, $"[{DateTime.Now}]\n{ex}\n\n");
+        }
+        catch { /* logging must never throw */ }
+        return path;
     }
 
     protected override void OnExit(ExitEventArgs e)
     {
         _pipeCts?.Cancel();
         _tray?.Dispose();
-        _mutex?.ReleaseMutex();
-        _mutex?.Dispose();
+        if (_mutex != null)
+        {
+            if (_ownsMutex)
+                _mutex.ReleaseMutex();
+            _mutex.Dispose();
+        }
         base.OnExit(e);
     }
 }
