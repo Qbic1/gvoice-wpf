@@ -1,6 +1,6 @@
 ; Voice Room — Inno Setup Script
 ; Build: dotnet publish first, then compile this script.
-#define AppVersion "1.1.0"
+#define AppVersion "1.2.0"
 
 [Setup]
 AppName=Voice Room

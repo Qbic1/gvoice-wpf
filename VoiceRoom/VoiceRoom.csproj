@@ -10,7 +10,7 @@
     <ApplicationIcon>Resources\app-icon.ico</ApplicationIcon>
 
     <!-- Keep the assembly/file version in sync with installer.iss AppVersion. -->
-    <Version>1.1.0</Version>
+    <Version>1.2.0</Version>
 
     <!-- Ship self-contained: end-user machines are not guaranteed to have the
          .NET 10 Desktop Runtime installed, and a framework-dependent publish
